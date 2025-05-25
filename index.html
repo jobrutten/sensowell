@@ -1,0 +1,752 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SensoWell Health</title>
+    
+    <!-- PWA Settings -->
+    <link rel="manifest" href="data:application/json;base64,ewogICJuYW1lIjogIlNlbnNvV2VsbCBIZWFsdGgiLAogICJzaG9ydF9uYW1lIjogIlNlbnNvV2VsbCIsCiAgInN0YXJ0X3VybCI6ICIvIiwKICAiZGlzcGxheSI6ICJzdGFuZGFsb25lIiwKICAiYmFja2dyb3VuZF9jb2xvciI6ICIjNGY0NmU1IiwKICAidGhlbWVfY29sb3IiOiAiIzRmNDZlNSIsCiAgImljb25zIjogWwogICAgewogICAgICAic3JjIjogImRhdGE6aW1hZ2Uvc3ZnK3htbDtiYXNlNjQsUEhOMlp5QjNhV1IwYUQwaU1UazJJaUJvWldsbmFIUTlJakU1TmlJZ1ptbHNiRDBpSTJSa1pERGRaSWdSdllHdGlZWE5sUFNJaU1qQWdNakFnTXpZZ016WWlQanhqYVhKamJHVWdZM2c5SWpFNElpQmplVDBpTVRnaUlISWlQazhpSUdacGJHdzlJaU5tWm1ZaUx6NDhMM04yWno0PSIsCiAgICAgICJzaXplcyI6ICIxOTJ4MTkyIiwKICAgICAgInR5cGUiOiAiaW1hZ2Uvc3ZnK3htbCIKICAgIH0KICBdCn0=">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="SensoWell">
+    
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            color: white;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 400px;
+            margin: 0 auto;
+        }
+        
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        
+        .logo {
+            font-size: 28px;
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+        
+        .subtitle {
+            opacity: 0.9;
+            font-size: 16px;
+        }
+        
+        .status-card {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 15px;
+            padding: 25px;
+            margin-bottom: 20px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        
+        .status-indicator {
+            display: flex;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+        
+        .status-dot {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            margin-right: 10px;
+            background: #ff4757;
+            animation: pulse 2s infinite;
+        }
+        
+        .status-dot.connected {
+            background: #2ed573;
+        }
+        
+        .status-dot.connecting {
+            background: #ffa502;
+        }
+        
+        @keyframes pulse {
+            0% { opacity: 1; }
+            50% { opacity: 0.5; }
+            100% { opacity: 1; }
+        }
+        
+        .connect-btn {
+            width: 100%;
+            padding: 15px;
+            background: #4f46e5;
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-bottom: 15px;
+        }
+        
+        .connect-btn:hover {
+            background: #4338ca;
+            transform: translateY(-2px);
+        }
+        
+        .connect-btn:disabled {
+            background: #6b7280;
+            cursor: not-allowed;
+            transform: none;
+        }
+        
+        .interventions {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 15px;
+            padding: 25px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        
+        .interventions h3 {
+            margin-bottom: 15px;
+            font-size: 18px;
+        }
+        
+        .intervention-item {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 10px;
+            animation: slideIn 0.3s ease;
+            position: relative;
+        }
+        
+        .intervention-item.urgent {
+            border-left: 4px solid #e74c3c;
+            background: rgba(231, 76, 60, 0.15);
+        }
+        
+        .intervention-item.high {
+            border-left: 4px solid #f39c12;
+            background: rgba(243, 156, 18, 0.15);
+        }
+        
+        .intervention-item.normal {
+            border-left: 4px solid #2ed573;
+            background: rgba(46, 213, 115, 0.15);
+        }
+        
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateX(-20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+        
+        .intervention-time {
+            font-size: 12px;
+            opacity: 0.7;
+            margin-bottom: 5px;
+        }
+        
+        .intervention-message {
+            font-size: 14px;
+            line-height: 1.4;
+            margin-bottom: 8px;
+        }
+        
+        .intervention-meta {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .intervention-type {
+            display: inline-block;
+            background: rgba(255, 255, 255, 0.2);
+            padding: 2px 8px;
+            border-radius: 12px;
+            font-size: 10px;
+            text-transform: uppercase;
+        }
+        
+        .intervention-priority {
+            font-size: 10px;
+            padding: 2px 6px;
+            border-radius: 8px;
+            text-transform: uppercase;
+            font-weight: bold;
+        }
+        
+        .priority-urgent {
+            background: #e74c3c;
+            color: white;
+        }
+        
+        .priority-high {
+            background: #f39c12;
+            color: white;
+        }
+        
+        .priority-normal {
+            background: #2ed573;
+            color: white;
+        }
+        
+        .empty-state {
+            text-align: center;
+            opacity: 0.7;
+            font-size: 14px;
+        }
+        
+        .user-id {
+            font-size: 12px;
+            opacity: 0.8;
+            margin-top: 10px;
+            word-break: break-all;
+        }
+        
+        .connection-info {
+            font-size: 12px;
+            opacity: 0.8;
+            margin-top: 10px;
+            padding: 10px;
+            background: rgba(0, 0, 0, 0.2);
+            border-radius: 8px;
+        }
+        
+        .instruction-card {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 15px;
+            padding: 20px;
+            margin-bottom: 20px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        
+        .instruction-step {
+            margin-bottom: 15px;
+            display: flex;
+            align-items: flex-start;
+        }
+        
+        .step-number {
+            background: #4f46e5;
+            color: white;
+            border-radius: 50%;
+            width: 24px;
+            height: 24px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+            font-weight: bold;
+            margin-right: 12px;
+            flex-shrink: 0;
+        }
+        
+        .step-text {
+            font-size: 14px;
+            line-height: 1.4;
+        }
+        
+        .stats {
+            display: flex;
+            justify-content: space-around;
+            margin-top: 15px;
+            padding-top: 15px;
+            border-top: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        
+        .stat {
+            text-align: center;
+        }
+        
+        .stat-number {
+            font-size: 20px;
+            font-weight: bold;
+            color: #2ed573;
+        }
+        
+        .stat-label {
+            font-size: 11px;
+            opacity: 0.8;
+        }
+        
+        .test-section {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 15px;
+            padding: 20px;
+            margin-top: 20px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        
+        .test-btn {
+            width: 100%;
+            padding: 12px;
+            background: #f39c12;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            margin-bottom: 10px;
+        }
+        
+        .test-btn:hover {
+            background: #e67e22;
+        }
+        
+        .esp-info {
+            background: rgba(46, 213, 115, 0.1);
+            border: 1px solid rgba(46, 213, 115, 0.3);
+            border-radius: 10px;
+            padding: 15px;
+            margin-bottom: 20px;
+        }
+        
+        .esp-info h4 {
+            color: #2ed573;
+            margin-bottom: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Header -->
+        <div class="header">
+            <div class="logo">🏥 SensoWell</div>
+            <div class="subtitle">ESP8266 Health Hub</div>
+        </div>
+        
+        <!-- ESP8266 Connection Info -->
+        <div class="esp-info">
+            <h4>📡 ESP8266 Connected!</h4>
+            <div style="font-size: 13px;">
+                <strong>WiFi:</strong> SensoWell-Hub<br>
+                <strong>ESP8266 IP:</strong> 192.168.4.1<br>
+                <strong>Status:</strong> Ready to receive interventions
+            </div>
+        </div>
+        
+        <!-- Instructions -->
+        <div class="instruction-card">
+            <h4 style="margin-bottom: 15px;">📱 How to Connect</h4>
+            <div class="instruction-step">
+                <div class="step-number">1</div>
+                <div class="step-text">✅ Your phone is connected to SensoWell-Hub WiFi</div>
+            </div>
+            <div class="instruction-step">
+                <div class="step-number">2</div>
+                <div class="step-text">Tap "Connect to ESP8266" below to start receiving interventions</div>
+            </div>
+            <div class="instruction-step">
+                <div class="step-number">3</div>
+                <div class="step-text">Keep the app open to receive real-time health notifications</div>
+            </div>
+        </div>
+        
+        <!-- Connection Status -->
+        <div class="status-card">
+            <div class="status-indicator">
+                <div class="status-dot" id="statusDot"></div>
+                <span id="statusText">Ready to Connect to ESP8266</span>
+            </div>
+            
+            <button class="connect-btn" id="connectBtn">
+                📡 Connect to ESP8266 Health Hub
+            </button>
+            
+            <div class="user-id" id="userIdDisplay"></div>
+            <div class="connection-info" id="connectionInfo" style="display: none;"></div>
+        </div>
+        
+        <!-- Interventions -->
+        <div class="interventions">
+            <h3>📋 Health Interventions</h3>
+            <div id="interventionsList">
+                <div class="empty-state">
+                    Connect to ESP8266 to receive personalized health interventions
+                </div>
+            </div>
+            
+            <div class="stats" id="statsSection" style="display: none;">
+                <div class="stat">
+                    <div class="stat-number" id="totalInterventions">0</div>
+                    <div class="stat-label">Total</div>
+                </div>
+                <div class="stat">
+                    <div class="stat-number" id="todayInterventions">0</div>
+                    <div class="stat-label">Today</div>
+                </div>
+                <div class="stat">
+                    <div class="stat-number" id="urgentInterventions">0</div>
+                    <div class="stat-label">Urgent</div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Test Section -->
+        <div class="test-section">
+            <h4 style="margin-bottom: 15px;">🧪 Test Controls</h4>
+            <button class="test-btn" onclick="simulateIntervention()">
+                Send Test Intervention
+            </button>
+            <button class="test-btn" onclick="clearInterventions()">
+                Clear All Interventions
+            </button>
+            <div style="font-size: 12px; opacity: 0.8; margin-top: 10px;">
+                Use these buttons to test the interface without ESP8266 connection
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Global variables
+        let isConnected = false;
+        let userID = null;
+        let interventions = [];
+        let esp8266URL = 'http://192.168.4.1'; // ESP8266 AP IP
+        let pollInterval = null;
+
+        // Generate unique user ID
+        function generateUserID() {
+            return 'user_esp_' + Math.random().toString(36).substr(2, 9);
+        }
+
+        // Initialize app
+        function initApp() {
+            userID = generateUserID();
+            document.getElementById('userIdDisplay').textContent = `User ID: ${userID}`;
+            
+            // Load saved interventions
+            loadInterventions();
+            
+            // Request notification permission
+            requestNotificationPermission();
+            
+            // Update stats
+            updateStats();
+        }
+
+        // Connect to ESP8266
+        async function connectToESP8266() {
+            try {
+                updateStatus('connecting', 'Connecting to ESP8266...');
+                document.getElementById('connectBtn').textContent = 'Connecting...';
+                document.getElementById('connectBtn').disabled = true;
+
+                console.log('Connecting to ESP8266 at:', esp8266URL);
+                
+                // Test connection by registering user
+                const registerResponse = await fetch(`${esp8266URL}/register?user_id=${userID}`);
+                
+                if (!registerResponse.ok) {
+                    throw new Error(`ESP8266 responded with status: ${registerResponse.status}`);
+                }
+                
+                const registerData = await registerResponse.json();
+                console.log('Registration response:', registerData);
+                
+                if (registerData.status === 'success') {
+                    // Successfully connected
+                    updateStatus('connected', 'Connected to ESP8266 Hub');
+                    document.getElementById('connectBtn').textContent = '✅ Connected - Listening for Interventions';
+                    document.getElementById('connectBtn').disabled = true;
+                    
+                    // Show connection info
+                    document.getElementById('connectionInfo').style.display = 'block';
+                    document.getElementById('connectionInfo').textContent = 
+                        `Connected to ESP8266: ${esp8266URL}\nUser ID: ${userID}\nListening for interventions...`;
+
+                    console.log('Successfully connected to ESP8266!');
+                    
+                    // Start polling for interventions
+                    startPollingForInterventions();
+                    
+                } else {
+                    throw new Error(registerData.message || 'Registration failed');
+                }
+
+            } catch (error) {
+                console.error('Connection failed:', error);
+                updateStatus('disconnected', 'Connection Failed');
+                document.getElementById('connectBtn').textContent = 'Retry Connection';
+                document.getElementById('connectBtn').disabled = false;
+                
+                let errorMessage = 'Connection failed!\n\n';
+                
+                if (error.message.includes('Failed to fetch') || error.message.includes('Network')) {
+                    errorMessage += 'Cannot reach ESP8266. Make sure:\n';
+                    errorMessage += '• Your phone is connected to "SensoWell-Hub" WiFi\n';
+                    errorMessage += '• ESP8266 is powered on and running\n';
+                    errorMessage += '• You can see the startup messages in Arduino Serial Monitor';
+                } else {
+                    errorMessage += `Error: ${error.message}`;
+                }
+                
+                alert(errorMessage);
+            }
+        }
+
+        // Start polling for interventions
+        function startPollingForInterventions() {
+            if (pollInterval) {
+                clearInterval(pollInterval);
+            }
+            
+            // Poll every 5 seconds (ESP8266 has limited resources)
+            pollInterval = setInterval(async () => {
+                if (!isConnected) {
+                    clearInterval(pollInterval);
+                    return;
+                }
+                
+                try {
+                    const response = await fetch(`${esp8266URL}/interventions?user_id=${userID}`);
+                    
+                    if (response.ok) {
+                        const data = await response.json();
+                        
+                        if (data.status === 'success' && data.interventions && data.interventions.length > 0) {
+                            console.log('Received interventions from ESP8266:', data.interventions);
+                            
+                            // Process each intervention
+                            data.interventions.forEach(intervention => {
+                                addIntervention(intervention);
+                            });
+                        }
+                    }
+                } catch (error) {
+                    console.error('Error polling ESP8266:', error);
+                    // Don't show error to user for polling issues
+                }
+            }, 5000); // Poll every 5 seconds
+            
+            // Also check immediately
+            setTimeout(async () => {
+                if (isConnected) {
+                    try {
+                        const response = await fetch(`${esp8266URL}/interventions?user_id=${userID}`);
+                        
+                        if (response.ok) {
+                            const data = await response.json();
+                            if (data.status === 'success' && data.interventions && data.interventions.length > 0) {
+                                data.interventions.forEach(intervention => {
+                                    addIntervention(intervention);
+                                });
+                            }
+                        }
+                    } catch (error) {
+                        console.error('Initial intervention check failed:', error);
+                    }
+                }
+            }, 1000);
+        }
+
+        // Add intervention to the list
+        function addIntervention(intervention) {
+            const newIntervention = {
+                id: intervention.id || Date.now(),
+                message: intervention.message || 'Health recommendation received from ESP8266',
+                type: intervention.type || 'health',
+                priority: intervention.priority || 'normal',
+                timestamp: intervention.timestamp || new Date().toISOString()
+            };
+
+            // Check if we already have this intervention
+            if (!interventions.find(i => i.id === newIntervention.id)) {
+                interventions.unshift(newIntervention); // Add to beginning
+                
+                // Keep only last 20 interventions (ESP8266 has limited memory)
+                if (interventions.length > 20) {
+                    interventions = interventions.slice(0, 20);
+                }
+                
+                saveInterventions();
+                updateInterventionsUI();
+                updateStats();
+                
+                // Show notification
+                showNotification(newIntervention);
+                
+                console.log('Added intervention from ESP8266:', newIntervention);
+            }
+        }
+
+        // Update interventions display
+        function updateInterventionsUI() {
+            const list = document.getElementById('interventionsList');
+            
+            if (interventions.length === 0) {
+                list.innerHTML = '<div class="empty-state">No interventions yet. Connect to ESP8266 to receive health recommendations.</div>';
+                return;
+            }
+
+            list.innerHTML = interventions.map(intervention => `
+                <div class="intervention-item ${intervention.priority}">
+                    <div class="intervention-time">
+                        ${new Date(intervention.timestamp).toLocaleString()}
+                    </div>
+                    <div class="intervention-message">
+                        📡 ${intervention.message}
+                    </div>
+                    <div class="intervention-meta">
+                        <div class="intervention-type">
+                            ${intervention.type}
+                        </div>
+                        <div class="intervention-priority priority-${intervention.priority}">
+                            ${intervention.priority}
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        // Update statistics
+        function updateStats() {
+            if (interventions.length === 0) {
+                document.getElementById('statsSection').style.display = 'none';
+                return;
+            }
+            
+            document.getElementById('statsSection').style.display = 'flex';
+            
+            const today = new Date().toDateString();
+            const todayInterventions = interventions.filter(i => 
+                new Date(i.timestamp).toDateString() === today
+            ).length;
+            
+            const urgentInterventions = interventions.filter(i => 
+                i.priority === 'urgent'
+            ).length;
+            
+            document.getElementById('totalInterventions').textContent = interventions.length;
+            document.getElementById('todayInterventions').textContent = todayInterventions;
+            document.getElementById('urgentInterventions').textContent = urgentInterventions;
+        }
+
+        // Update connection status
+        function updateStatus(status, message) {
+            const statusDot = document.getElementById('statusDot');
+            const statusText = document.getElementById('statusText');
+
+            statusDot.className = 'status-dot ' + status;
+            statusText.textContent = message;
+            isConnected = (status === 'connected');
+        }
+
+        // Show browser notification
+        function showNotification(intervention) {
+            if ('Notification' in window && Notification.permission === 'granted') {
+                let title = '📡 ESP8266 Health Alert';
+                if (intervention.priority === 'urgent') {
+                    title = '🚨 Urgent Health Alert';
+                } else if (intervention.priority === 'high') {
+                    title = '⚠️ Health Alert';
+                }
+                
+                const notification = new Notification(title, {
+                    body: intervention.message,
+                    icon: 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTk2IiBoZWlnaHQ9IjE5NiIgZmlsbD0iIzRmNDZlNSIgdmlld0JveD0iMCAwIDM2IDM2Ij48Y2lyY2xlIGN4PSIxOCIgY3k9IjE4IiByPSI4IiBmaWxsPSIjZmZmIi8+PC9zdmc+',
+                    tag: 'esp8266-intervention',
+                    requireInteraction: intervention.priority === 'urgent'
+                });
+
+                // Auto-close after 8 seconds (except urgent)
+                if (intervention.priority !== 'urgent') {
+                    setTimeout(() => notification.close(), 8000);
+                }
+            }
+        }
+
+        // Request notification permission
+        function requestNotificationPermission() {
+            if ('Notification' in window && Notification.permission === 'default') {
+                Notification.requestPermission();
+            }
+        }
+
+        // Save interventions to local storage
+        function saveInterventions() {
+            localStorage.setItem('sensowell_esp_interventions', JSON.stringify(interventions));
+        }
+
+        // Load interventions from local storage
+        function loadInterventions() {
+            const saved = localStorage.getItem('sensowell_esp_interventions');
+            if (saved) {
+                interventions = JSON.parse(saved);
+                updateInterventionsUI();
+                updateStats();
+            }
+        }
+
+        // Test functions
+        function simulateIntervention() {
+            const testInterventions = [
+                {
+                    message: 'Heart rate elevated (110 bpm). Try breathing exercises.',
+                    type: 'breathing',
+                    priority: 'high'
+                },
+                {
+                    message: 'High stress detected. Take a short break.',
+                    type: 'relaxation',
+                    priority: 'high'
+                },
+                {
+                    message: 'ESP8266 test intervention working perfectly!',
+                    type: 'test',
+                    priority: 'normal'
+                }
+            ];
+            
+            const randomIntervention = testInterventions[Math.floor(Math.random() * testInterventions.length)];
+            randomIntervention.userID = userID;
+            addIntervention(randomIntervention);
+        }
+
+        function clearInterventions() {
+            interventions = [];
+            saveInterventions();
+            updateInterventionsUI();
+            updateStats();
+        }
+
+        // Event listeners
+        document.getElementById('connectBtn').addEventListener('click', connectToESP8266);
+
+        // Initialize app when page loads
+        window.addEventListener('DOMContentLoaded', initApp);
+
+        // Handle page visibility (reconnect when app comes back)
+        document.addEventListener('visibilitychange', () => {
+            if (!document.hidden && isConnected && esp8266URL) {
+                console.log('App visible, checking ESP8266 connection...');
+                // Restart polling if needed
+                if (!pollInterval) {
+                    startPollingForInterventions();
+                }
+            }
+        });
+    </script>
+</body>
+</html>
